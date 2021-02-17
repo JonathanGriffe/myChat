@@ -1,0 +1,191 @@
+body{
+    background-image: url("../img/Indice_zhe.png");
+    background-size: 100%;
+    margin:0;
+    height: 100%;
+}
+
+html{
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+img{
+    width:100%;
+    height:100%;
+}
+.recu{
+    text-align: left;
+}
+
+.envoye{
+    float: right;
+}
+
+#sponsored{
+    float:left;
+}
+
+#content{
+    align-content: center;
+    max-width: 400px;
+    width: 80%;
+    height: 100%;
+    margin:auto;
+    background-color: white;
+}
+
+#cadreChat{
+    overflow:   none;
+    height: calc(100% - 35px); 
+    width:100%;
+    position: relative;
+    float:left;
+    background-color: white;
+}
+
+
+#conv{
+    position: absolute;
+    bottom: 0;
+    left:0;
+    max-height: 100%;
+    max-width: 100%;
+    width: 100%;
+    overflow-y: scroll;
+    font-size: 20px;
+    display:flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-bottom: 8px;
+}
+
+#form{
+    float:left;
+    width:100%;
+    height: 35px;
+}
+
+#form input{
+    float:left;
+    height: 35px;
+    width: 80%;
+    border:0;
+    padding:0;
+}
+
+#form input[type="submit"]{
+    width: 20%;
+    float:left;
+}
+
+#inpChat{
+    
+    background-color: lightgrey;
+}
+
+#login{
+    padding-left: calc(50% - 100px);
+    padding-right: calc(50% - 100px);
+    padding-top: 25%;
+    background-color: white;
+}
+
+#label{
+    width: 100%;
+    height: 60px;
+    padding: 6px;
+    margin:0;
+    text-align: center;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+#login input[type="submit"]{
+    width:100%;
+    float:left;
+    
+    border:5px;
+    padding:6px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    border-color: lightgrey;
+}
+
+#login input[type="text"]{
+    width:100%;
+    float:left;
+    border:5px;
+    padding:6px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+#login button{
+    width: 100%;
+    border:5px;
+    padding:6px;  
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.message{
+    max-width: 60%;
+    overflow-wrap: break-word;
+    white-space: pre-wrap; /* css-3 */
+    word-break: break-all;
+    margin:10px;
+    margin-bottom: 0;
+    margin-top: 20px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    position: relative;
+  }
+
+.msgtext{
+    top:50%;
+    margin:10px;
+}
+
+.message.envoye img {
+    position: absolute;
+    left:100%;
+    bottom: 0;
+    height: 10px;
+    width: 10px ;
+}
+
+.message.envoye{
+    margin-right: 15px;
+    float: right;
+    background-image: linear-gradient(purple,blue);
+    color:white;
+    margin-top: 2px;
+}
+
+
+.message.recu{
+    float:left;
+    background-color: lightgrey;
+    color: black;
+}
+
+.msgcont{
+    display: inline-block;
+    width: 100%;
+}
+
+.username{
+    position: absolute;
+    font-size: 12px;
+    margin:0;
+    color: lightgrey;
+    bottom: 100%;
+    left:10px;
+}
+
+.message.recu.suite{
+    margin-top: 2px;
+}

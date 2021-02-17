@@ -1,0 +1,113 @@
+var socket = io('http://localhost:8080');
+/*
+document.getElementById("form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const idMsg = Math.random();
+    socket.emit("message", { message: document.getElementById("inpChat").value, id: idMsg });
+    document.getElementById("conv").innerHTML += "<br> <span class='envoye' id=" + idMsg + ">" +  document.getElementById("inpChat").value + " </span>";
+    document.getElementById("inpChat").value = "";
+    console.log("sent!");
+    return true;
+})*/
+var clearTimer;
+
+
+var username = getCookie("username");
+if (username) {
+    gotoChat();
+} else {
+    gotoLogin();
+}
+
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+
+
+function gotoChat(){
+    
+    document.getElementById("content").innerHTML = "<div id='cadreChat'><div id='conv'></div></div><form id='form'><input type='text' id='inpChat' placeholder='message' required><input type='submit' value='Entree'></form>"
+
+    document.getElementById("form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const idMsg = Math.random();
+        socket.emit("message", { message: document.getElementById("inpChat").value, id: idMsg , usr:username});
+        let conv = document.getElementById("conv")
+        conv.innerHTML += "<div class='msgcont'><div class='message envoye' id=" + idMsg + "><p class='msgtext'>" + document.getElementById('inpChat').value + "</p></div></div>";
+        conv.scrollTop = conv.scrollHeight;
+        //"<br> <span class='envoye' id=" + idMsg + ">" +  document.getElementById("inpChat").value + " </span>";
+        document.getElementById("inpChat").value = "";
+        console.log("sent!");});
+    return true;
+}
+
+function gotoLogin(){
+    document.getElementById("content").innerHTML = "<form id='login'><p id='label'></p><input type='text' placeholder='Username' id='usr' required><input type='text' placeholder='Password' id='mdp' required><input type='submit' value='Entree'><button type='button' id='creacc'>Creer un compte</button></form>"
+    document.getElementById("creacc").addEventListener("click", () => {socket.emit('newacc', document.getElementById('usr').value, document.getElementById('mdp').value)});
+    document.getElementById("login").addEventListener("submit", function(e){
+        e.preventDefault();
+        socket.emit("login", document.getElementById('usr').value, document.getElementById('mdp').value);
+    });
+}
+
+
+socket.on("login", function(usr){
+    if(usr){
+        username = usr;
+        document.cookie = "username=" + usr
+        gotoChat();
+    } else {
+        var label = document.getElementById("label");
+        label.innerHTML = "mauvais identifiants";
+        label.style.backgroundColor = "red";
+        clearTimer = setTimeout(() => {
+            label.innerHTML = "";
+            label.style.backgroundColor = "white";
+        }, 2000);
+    }
+
+});
+socket.on("bien envoye", function(msgId){var check = document.createElement("img"); check.src='public/img/check.png'; document.getElementById(msgId).appendChild(check)});
+socket.on("recu", function (data){
+    if(document.getElementById("conv").lastChild != null && document.getElementById("conv").lastChild.id == data.usr){
+        document.getElementById("conv").innerHTML += "<div class='msgcont' id='" + data.usr + "'><div class='message recu suite'><p class='msgtext'>" + data.message + "</p></div></div>";
+    } else {
+        document.getElementById("conv").innerHTML += "<div class='msgcont' id='" + data.usr + "'><div class='message recu'><p class='msgtext'>" + data.message + "</p><p class='username'>" + data.usr + "</p></div></div>";
+    }
+});
+       
+socket.on("acc cree", function(username){
+    var label = document.getElementById("label");
+    label.innerHTML = "Bienvenue " + username + " !";
+    label.style.backgroundColor = "lightgreen";
+    clearTimer = setTimeout(() => {
+        label.innerHTML = "";
+        label.style.backgroundColor = "white";
+    }, 2000);
+})
+/*
+<div id="cadreChat">
+                    
+<p id="conv">
+
+</p>
+</div>
+<form id="form">
+
+<input type="text" id="inpChat" placeholder="message">
+<input type="submit" value="Entree">
+
+</form>*/
