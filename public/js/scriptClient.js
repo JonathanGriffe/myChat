@@ -1,17 +1,9 @@
+
 var socket = io('http://localhost:8080');
-/*
-document.getElementById("form").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const idMsg = Math.random();
-    socket.emit("message", { message: document.getElementById("inpChat").value, id: idMsg });
-    document.getElementById("conv").innerHTML += "<br> <span class='envoye' id=" + idMsg + ">" +  document.getElementById("inpChat").value + " </span>";
-    document.getElementById("inpChat").value = "";
-    console.log("sent!");
-    return true;
-})*/
+
 var clearTimer;
 
-
+//if the user has an identification cookie, he goes to the chat page, else he goes to the login page
 var username = getCookie("username");
 if (username) {
     gotoChat();
@@ -38,7 +30,7 @@ function getCookie(cname) {
 
 
 function gotoChat(){
-    
+
     document.getElementById("content").innerHTML = "<div id='cadreChat'><div id='conv'></div></div><form id='form'><input type='text' id='inpChat' placeholder='message' required><input type='submit' value='Entree'></form>"
 
     document.getElementById("form").addEventListener("submit", function(e) {
@@ -51,9 +43,35 @@ function gotoChat(){
         //"<br> <span class='envoye' id=" + idMsg + ">" +  document.getElementById("inpChat").value + " </span>";
         document.getElementById("inpChat").value = "";
         console.log("sent!");});
+
+    //upon entering the chat, get the previous messages from the server
+    fetch('/messages').then(response => response.json()).then(response => response.forEach(data => {//execute this for each message
+
+        //if the username of the author of a message matches the user's name, display it as a message sent
+        if(data.usr != username){
+            if(document.getElementById("conv").lastChild != null && document.getElementById("conv").lastChild.id == data.usr){
+                document.getElementById("conv").innerHTML += "<div class='msgcont' id='" + data.usr + "'><div class='message recu suite'><p class='msgtext'>" + data.message + "</p></div></div>";
+            } else {
+                document.getElementById("conv").innerHTML += "<div class='msgcont' id='" + data.usr + "'><div class='message recu'><p class='msgtext'>" + data.message + "</p><p class='username'>" + data.usr + "</p></div></div>";
+            }
+        } else {//else, display it as a message received from another user
+            const idMsg = Math.random();
+            let conv = document.getElementById("conv")
+            var msg = document.createElement("div");
+            msg.class='msgcont';
+            msg.innerHTML="<div class='message envoye' id=" + idMsg + "><p class='msgtext'>" + data.message + "</p></div>";
+            conv.appendChild(msg);
+            var check = document.createElement("img");
+            check.src='public/img/check.png'; 
+            document.getElementById(idMsg).appendChild(check)
+        }
+        
+    }));
+
     return true;
 }
 
+//login page with a simple form
 function gotoLogin(){
     document.getElementById("content").innerHTML = "<form id='login'><p id='label'></p><input type='text' placeholder='Username' id='usr' required><input type='text' placeholder='Password' id='mdp' required><input type='submit' value='Entree'><button type='button' id='creacc'>Creer un compte</button></form>"
     document.getElementById("creacc").addEventListener("click", () => {socket.emit('newacc', document.getElementById('usr').value, document.getElementById('mdp').value)});
@@ -65,13 +83,16 @@ function gotoLogin(){
 
 
 socket.on("login", function(usr){
+    //if login successful, put username in cookie and go to the chat page
     if(usr){
         username = usr;
         document.cookie = "username=" + usr
         gotoChat();
     } else {
+    
+        //else, display wrong username or password
         var label = document.getElementById("label");
-        label.innerHTML = "mauvais identifiants";
+        label.innerHTML = "wrong username or password";
         label.style.backgroundColor = "red";
         clearTimer = setTimeout(() => {
             label.innerHTML = "";
@@ -80,15 +101,32 @@ socket.on("login", function(usr){
     }
 
 });
+
+//display if server successfully received the message
 socket.on("bien envoye", function(msgId){var check = document.createElement("img"); check.src='public/img/check.png'; document.getElementById(msgId).appendChild(check)});
+
+//display received message
 socket.on("recu", function (data){
-    if(document.getElementById("conv").lastChild != null && document.getElementById("conv").lastChild.id == data.usr){
-        document.getElementById("conv").innerHTML += "<div class='msgcont' id='" + data.usr + "'><div class='message recu suite'><p class='msgtext'>" + data.message + "</p></div></div>";
+    if(data.usr != username){
+        if(document.getElementById("conv").lastChild != null && document.getElementById("conv").lastChild.id == data.usr){
+            document.getElementById("conv").innerHTML += "<div class='msgcont' id='" + data.usr + "'><div class='message recu suite'><p class='msgtext'>" + data.message + "</p></div></div>";
+        } else {
+            document.getElementById("conv").innerHTML += "<div class='msgcont' id='" + data.usr + "'><div class='message recu'><p class='msgtext'>" + data.message + "</p><p class='username'>" + data.usr + "</p></div></div>";
+        }
     } else {
-        document.getElementById("conv").innerHTML += "<div class='msgcont' id='" + data.usr + "'><div class='message recu'><p class='msgtext'>" + data.message + "</p><p class='username'>" + data.usr + "</p></div></div>";
+        const idMsg = Math.random();
+        let conv = document.getElementById("conv")
+        var msg = document.createElement("div");
+        msg.class='msgcont';
+        msg.innerHTML="<div class='message envoye' id=" + idMsg + "><p class='msgtext'>" + data.message + "</p></div>";
+        conv.appendChild(msg);
+        var check = document.createElement("img");
+        check.src='public/img/check.png'; 
+        document.getElementById(idMsg).appendChild(check)
     }
 });
        
+//displays successfully created account
 socket.on("acc cree", function(username){
     var label = document.getElementById("label");
     label.innerHTML = "Bienvenue " + username + " !";
@@ -98,16 +136,3 @@ socket.on("acc cree", function(username){
         label.style.backgroundColor = "white";
     }, 2000);
 })
-/*
-<div id="cadreChat">
-                    
-<p id="conv">
-
-</p>
-</div>
-<form id="form">
-
-<input type="text" id="inpChat" placeholder="message">
-<input type="submit" value="Entree">
-
-</form>*/
