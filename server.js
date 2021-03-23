@@ -5,50 +5,56 @@ var http = require('http').createServer(app);
 const port = 8080;
 var url = require('url');
 var fs = require('fs');
-var mysql = require('mysql')
+const {Client} = require('pg');
 var socket = require('socket.io')(http);
 
 
-var con = mysql.createConnection({
-  host: "localhost",
-  user: "Jonathan",
-  password: "Jonathan"
-});
 
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connecte!");
-    con.query("USE mydb", function(e,result){
-      if (e) throw e;
-    })
+const client = new Client({
+  host: "localhost",
+  user: "postgres",
+  password: "JvPeH91",
+  port: 5432,
+  database: "mydb",
 });
+client.connect()
 
 socket.on("connection", function(sockett) {
   console.log("Nouvel utilisateur");
 
   sockett.on('newacc', function(username, password){
-    con.query("INSERT INTO identifiants VALUES ('" + username + "','" + password +"')", function(e, result){
+    client.query("INSERT INTO identifiants VALUES ('" + username + "','" + password +"')", function(e, result){
       if (e) throw e;
       console.log("Compte créé : " + username);
       sockett.emit("acc cree", username);
     });
-    return true;
-
   });
 
   sockett.on("login", function(username, password){
-    con.query("SELECT COUNT(*) FROM identifiants WHERE username = '" + username + "' AND mdp = '" + password+"'", function(e, result){
+    client.query("SELECT COUNT(*) FROM identifiants WHERE username = '" + username + "' AND mdp = '" + password+"'", function(e, result){
       if (e) throw e;
-      if(result[0]['COUNT(*)'] >= 1){
+      if(result.rows[0]['count'] >= 1){
         sockett.emit("login", username);
       } else {
         sockett.emit("login", "");
       }
     })
   })
+
+  sockett.on("loading", function(data){
+    client.query("SELECT * FROM messages", function(e, result){
+      if(e) throw e;
+      result.rows.forEach(element => {
+        sockett.emit("recu", element)
+      })
+    })
+  })
+
   sockett.on("message", function(data) {
     console.log("Message reçu : " + data.message);
-    fs.appendFile(__dirname + "/conv.txt", data.message + "\n",() => {console.log("Message ecrit")});
+    client.query("INSERT INTO messages VALUES ('" + data.usr + "','"+data.message+"')", function(e, result){
+      if (e) throw e;
+    })
     sockett.broadcast.emit("recu", {message : data.message, usr : data.usr});
     sockett.emit("bien envoye", data.id);
     return true;
@@ -64,6 +70,13 @@ app.use("/public",express.static('public'));
 app.use("/socket.io", express.static('socket.io'));
 app.get('/', function(req,res) {
   res.sendFile(path.join(__dirname,'/public/chat.html'));
+});
+
+app.get('/messages', function(req, res){
+  client.query("SELECT * FROM messages", function(e, result){
+    if(e) throw e;
+    res.send(result.rows)
+  })
 });
 
 
